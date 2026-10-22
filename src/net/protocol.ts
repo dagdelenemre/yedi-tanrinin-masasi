@@ -126,6 +126,7 @@ export type NetEvent =
 
 export type ClientMsg =
   | { t: 'hello'; token: string }
+  | { t: 'ping' }
   | { t: 'create'; name: string }
   | { t: 'join'; code: string; name: string }
   | { t: 'setGame'; game: GameChoice }
@@ -141,6 +142,7 @@ export type ClientMsg =
 
 export type ServerMsg =
   | { t: 'error'; msg: string }
+  | { t: 'pong' }
   | { t: 'room'; room: RoomView }
   | { t: 'left' }
   | { t: 'intro'; game: GameId; dealerGod: GodId; ready: number[]; humans: number[]; deadline: number; state: TableState }

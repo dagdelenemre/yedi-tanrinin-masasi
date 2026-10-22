@@ -1,11 +1,12 @@
 import './online.css';
 import { GOD_ORDER, GodId } from './engine/gods';
 import { fitStage } from './ui/dom';
+import { initMobile } from './ui/mobile';
 import { showOnline } from './ui/online';
 import { boot, godIntro, showCrossroads } from './ui/screens';
 
 fitStage();
-window.addEventListener('resize', fitStage);
+initMobile(fitStage);
 
 const params = new URLSearchParams(location.search);
 // ?oda=1234: davet bağlantısı, doğrudan çevrimiçi katılma ekranı

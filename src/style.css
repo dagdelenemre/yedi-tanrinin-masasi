@@ -714,3 +714,29 @@ button { font-family: inherit; color: inherit; }
 
 /* giriş alanları her tarayıcıda (Safari/iOS dahil) yazılabilir olsun */
 input, textarea { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; touch-action: manipulation; }
+
+/* ------------------------------------------------------------------ */
+/* MOBİL: yan çevir uyarısı + tam ekran teklifi (sahnenin dışında, ekran ölçüsünde) */
+#rotate-hint { display: none; }
+@media (orientation: portrait) and (pointer: coarse) {
+  #rotate-hint {
+    position: fixed; inset: 0; z-index: 10000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3vh;
+    padding: 0 10vw; text-align: center; color: var(--ink);
+    background: radial-gradient(ellipse at 50% 40%, #2a1d12, #0b0806 70%);
+  }
+  #viewport { visibility: hidden; }
+}
+.rh-phone { width: 22vw; height: 38vw; max-width: 120px; max-height: 210px; border: 3px solid var(--gold); border-radius: 18px; position: relative; animation: rh-turn 2.6s ease-in-out infinite; box-shadow: 0 0 30px rgba(212, 175, 106, .25); }
+.rh-phone i { position: absolute; left: 50%; bottom: 7%; width: 14%; height: 1.5%; min-height: 3px; transform: translateX(-50%); background: var(--gold); border-radius: 3px; }
+@keyframes rh-turn { 0%, 25% { transform: rotate(0); } 55%, 85% { transform: rotate(-90deg); } 100% { transform: rotate(0); } }
+.rh-title { font: 600 8vw var(--display); color: var(--gold-hi); line-height: 1.1; }
+.rh-text { font-style: italic; font-size: 4.6vw; color: #d9cba8; line-height: 1.35; }
+
+#fs-prompt { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, .6); animation: screen-in .4s ease; }
+.fs-card { width: min(78vw, 520px); padding: 4vmin 5vmin; text-align: center; color: var(--pink); position: relative;
+  background: linear-gradient(175deg, #efe0bd, #e2cc9e 60%, #d6bc89); box-shadow: inset 0 0 50px rgba(110, 70, 20, .45), 0 20px 60px rgba(0, 0, 0, .7); }
+.fs-title { font: 600 clamp(26px, 6vmin, 44px) var(--display); line-height: 1.05; }
+.fs-text { font-size: clamp(15px, 3.6vmin, 20px); line-height: 1.35; margin: 1.5vmin 0 3vmin; color: var(--pink-soft); }
+.fs-text b { color: var(--oxblood); }
+.fs-go { display: block; width: 100%; padding: 2.4vmin; border: none; cursor: pointer; background: var(--oxblood); color: #f4e4c4; font: 500 clamp(17px, 4vmin, 24px) var(--text); font-variant-caps: all-small-caps; letter-spacing: .1em; }
+.fs-no { display: block; margin: 1.6vmin auto 0; background: none; border: none; cursor: pointer; color: var(--pink-soft); font: italic clamp(14px, 3.2vmin, 18px) var(--text); text-decoration: underline; }

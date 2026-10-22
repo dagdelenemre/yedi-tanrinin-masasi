@@ -2,8 +2,17 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
     <title>Yedi Tanrının Masası</title>
+    <meta name="theme-color" content="#0b0806" />
+    <!-- Ana ekrana eklenince adres çubuğu olmadan, tam ekran açılsın -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Yedi Tanrı" />
+    <link rel="apple-touch-icon" href="/icons/icon-180.png" />
+    <link rel="icon" type="image/png" href="/icons/icon-192.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -14,6 +23,12 @@
   </head>
   <body>
     <div id="viewport"><div id="stage"></div></div>
+    <!-- Telefon dikken: yan çevir uyarısı (yalnızca dokunmatik cihazlarda) -->
+    <div id="rotate-hint">
+      <div class="rh-phone"><i></i></div>
+      <div class="rh-title">Telefonunu yan çevir</div>
+      <div class="rh-text">Yedi tanrının masası en iyi yatay ekranda görünür.</div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

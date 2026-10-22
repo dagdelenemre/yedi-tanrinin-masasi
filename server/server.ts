@@ -580,7 +580,7 @@ function resync(room: Room, seat: number) {
 // ---------------------------------------------------------------------------
 const MIME: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.json': 'application/json', '.webp': 'image/webp', '.woff2': 'font/woff2',
+  '.svg': 'image/svg+xml', '.png': 'image/png', '.webmanifest': 'application/manifest+json', '.ico': 'image/x-icon', '.json': 'application/json', '.webp': 'image/webp', '.woff2': 'font/woff2',
 };
 
 const server = http.createServer((req, res) => {
@@ -603,7 +603,7 @@ const server = http.createServer((req, res) => {
       return res.end('bulunamadı');
     }
     const ext = path.extname(file);
-    res.writeHead(200, { 'content-type': MIME[ext] || 'application/octet-stream', 'cache-control': ext === '.html' ? 'no-cache' : 'public, max-age=31536000, immutable' });
+    res.writeHead(200, { 'content-type': MIME[ext] || 'application/octet-stream', 'cache-control': ext === '.html' || ext === '.webmanifest' ? 'no-cache' : url.startsWith('/assets/') ? 'public, max-age=31536000, immutable' : 'public, max-age=86400' });
     res.end(data);
   });
 });
@@ -623,6 +623,7 @@ wss.on('connection', (ws) => {
       return;
     }
     if (!msg || typeof msg !== 'object') return;
+    if (msg.t === 'ping') return send(ws, { t: 'pong' });
     if (msg.t === 'hello') {
       const t = String(msg.token || '');
       if (!/^[\w-]{8,64}$/.test(t)) return;

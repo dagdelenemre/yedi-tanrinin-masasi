@@ -12,6 +12,7 @@ import { h, modal, nextFrame, save, sleep, stageEl, store } from './dom';
 import { Mood, godFigure } from './figures';
 import { ICON, MEDAL } from './icons';
 import { GOD_PARTICLES, Particles, godScene, templeScene } from './scenes';
+import { keepAwake } from './mobile';
 import { actText, chipStacks, clampInt, escapeHtml, medal, pips, place, tableSVG } from './table';
 
 // ---------------------------------------------------------------------------
@@ -51,7 +52,8 @@ function onMessage(m: ServerMsg) {
       room = m.room;
       if (!table) showLobby();
       else if (room.state === 'lobby' && !table.ended) {
-        // maç sunucuda bitti/iptal: masadan lobiye
+        // maç biz yokken bitti (ör. telefon uykudayken): sonucu göster, sonra lobiye
+        table.matchEnd(room.lastResult ?? []);
       }
       break;
     case 'left':
@@ -110,6 +112,7 @@ function statusLine() {
 // ---------------------------------------------------------------------------
 export function showOnline(onBack: () => void, prefillCode = '') {
   back = onBack;
+  keepAwake(false);
   if (!unsub) unsub = net.on(onMessage);
   net.connect();
   table = null;
@@ -182,6 +185,7 @@ export function showOnline(onBack: () => void, prefillCode = '') {
 // ---------------------------------------------------------------------------
 function showLobby() {
   if (!room) return;
+  keepAwake(true);
   const r = room;
   const isHost = r.seats[r.you]?.isHost;
   const seats = h('div', { class: 'lobby-seats' });
@@ -339,6 +343,7 @@ class OnlineTable {
     };
     window.addEventListener('keydown', this.keyHandler);
     this.timer = window.setInterval(() => this.tick(), 250);
+    keepAwake(true);
   }
 
   destroy() {
@@ -1234,9 +1239,17 @@ class OnlineTable {
   }
 
   matchEnd(standings: Standing[]) {
+    if (this.ended) return;
+    this.ended = true;
     this.queue = this.queue.then(() => {
-      this.ended = true;
       this.clearControls();
+      if (!standings.length) {
+        // sonuç bilinmiyor: doğrudan lobiye
+        this.destroy();
+        table = null;
+        showLobby();
+        return;
+      }
       const meSt = standings.find((s) => s.seat === this.state?.you);
       const won = meSt?.place === 1;
       if (won) sfx.bigWin();

@@ -12,6 +12,7 @@ import { h, modal, nextFrame, sleep, store, save } from './dom';
 import { Mood, godFigure } from './figures';
 import { ICON, MEDAL } from './icons';
 import { PACE_LABEL, T, getPace, nextPace, paceFactor } from './settings';
+import { keepAwake } from './mobile';
 import { GOD_PARTICLES, Particles, godScene } from './scenes';
 
 // ---------------------------------------------------------------------------
@@ -98,10 +99,12 @@ export class TableView {
     this.keyHandler = (e) => this.onKey(e);
     window.addEventListener('keydown', this.keyHandler);
     startAmbient(GOD_TONE[opts.godId]);
+    keepAwake(true);
   }
 
   destroy() {
     window.removeEventListener('keydown', this.keyHandler);
+    keepAwake(false);
     this.particles.destroy();
     stopAmbient();
     clearTimeout(this.moodTimer);

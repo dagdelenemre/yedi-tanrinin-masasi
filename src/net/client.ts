@@ -28,6 +28,35 @@ class NetClient {
   private wanted = false;
   status: NetStatus = 'closed';
   readonly token = getToken();
+  private lastMsg = 0;
+
+  constructor() {
+    // canlılık sinyali: bağlantı boşta kalıp araya giren vekiller (Cloudflare vb.) tarafından kapatılmasın
+    setInterval(() => {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) this.ws.send(JSON.stringify({ t: 'ping' }));
+    }, 20000);
+    // ekran kapanıp açılınca (telefon uykudan dönünce) bağlantıyı hemen tazele
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden || !this.wanted) return;
+      const stale = Date.now() - this.lastMsg > 25000;
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN || stale) this.reconnectNow();
+    });
+    addEventListener('online', () => this.wanted && this.reconnectNow());
+  }
+
+  /** Mevcut bağlantıyı bırakıp hemen yeniden bağlan */
+  reconnectNow() {
+    const old = this.ws;
+    this.ws = null;
+    if (old) {
+      old.onclose = null;
+      try {
+        old.close();
+      } catch {}
+    }
+    this.retry = 0;
+    this.connect();
+  }
 
   url(): string {
     const env = (import.meta as any).env?.VITE_WS_URL as string | undefined;
@@ -49,21 +78,25 @@ class NetClient {
     this.ws = ws;
     ws.onopen = () => {
       this.retry = 0;
+      this.lastMsg = Date.now();
       ws.send(JSON.stringify({ t: 'hello', token: this.token }));
       this.setStatus('open');
       const q = this.queue.splice(0);
       for (const m of q) ws.send(JSON.stringify(m));
     };
     ws.onmessage = (e) => {
+      this.lastMsg = Date.now();
       let m: ServerMsg;
       try {
         m = JSON.parse(e.data);
       } catch {
         return;
       }
+      if (m.t === 'pong') return;
       for (const l of this.listeners) l(m);
     };
     ws.onclose = () => {
+      if (this.ws !== ws) return;
       this.ws = null;
       this.setStatus('closed');
       if (this.wanted) this.scheduleRetry();
