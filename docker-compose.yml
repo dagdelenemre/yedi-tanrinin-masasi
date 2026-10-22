@@ -1,0 +1,15 @@
+# Oyun sunucusu. Dışarıya port açmaz; mevcut ters vekil (Caddy) ona
+# ortak Docker ağı üzerinden "yedi-tanri:8787" adresiyle ulaşır.
+services:
+  yedi-tanri:
+    build: .
+    container_name: yedi-tanri
+    restart: unless-stopped
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    # Caddy'nin bağlı olduğu ağ. Farklıysa: PROXY_NETWORK=ag_adi docker compose up -d
+    name: ${PROXY_NETWORK:-kanca_default}

@@ -2,6 +2,40 @@
 
 Sunucu tek bir Node.js süreci: hem oyunun sayfalarını sunar hem de `/ws` adresinde online odaları yönetir.
 
+## A) VPS'te zaten Docker içinde Caddy varsa (önerilen)
+
+80/443 portlarını bir Caddy container'ı tutuyorsa oyunu da container olarak çalıştır. Oyun dışarıya port açmaz; Caddy ona ortak Docker ağı üzerinden `yedi-tanri:8787` adresiyle ulaşır. HTTPS sertifikasını ve WebSocket'i Caddy kendisi halleder.
+
+```bash
+cd /opt/yedi-tanri && git pull && docker compose up -d --build
+```
+
+Caddy farklı bir ağdaysa `PROXY_NETWORK=ag_adi docker compose up -d --build` kullan (varsayılan ağ: `kanca_default`).
+
+Caddyfile'a eklenecek blok:
+
+```
+yedi-tanrinin-masasi.dagdelean.dev {
+	reverse_proxy yedi-tanri:8787
+}
+```
+
+Ardından ayarı doğrula ve kesintisiz yeniden yükle:
+
+```bash
+docker exec CADDY_CONTAINER caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+```
+
+```bash
+docker exec CADDY_CONTAINER caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+```
+
+Güncelleme için `cd /opt/yedi-tanri && git pull && docker compose up -d --build` yeterli.
+
+---
+
+## B) Sunucuda doğrudan nginx ile (Docker yoksa)
+
 Aşağıda alt alan adı olarak `oyun.ornek.com` kullanıldı; kendininkiyle değiştir.
 
 ## 1. DNS
