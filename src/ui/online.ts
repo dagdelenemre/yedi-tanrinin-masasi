@@ -151,7 +151,10 @@ export function showOnline(onBack: () => void, prefillCode = '') {
     if (!/^\d{4}$/.test(c)) return toast('Oda numarası 4 haneli.');
     net.send({ t: 'join', code: c, name: n });
   };
-  code.onkeydown = (e) => e.key === 'Enter' && join.click();
+  // Not: onkeydown bir işleyicide `false` döndürmek tuşu iptal eder; bu yüzden addEventListener
+  code.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') join.click();
+  });
   const panel = h(
     'div',
     { class: 'online-panel parchment' },
