@@ -587,7 +587,9 @@ const server = http.createServer((req, res) => {
   const url = decodeURIComponent((req.url || '/').split('?')[0]);
   if (url === '/health') {
     res.writeHead(200, { 'content-type': 'text/plain' });
-    return res.end(`ok ${rooms.size} oda`);
+    // biçim: "ok <oda> oda <süren maç> masa" — otomatik güncelleme betiği 4. alanı okur
+    const playing = [...rooms.values()].filter((r) => r.state === 'playing').length;
+    return res.end(`ok ${rooms.size} oda ${playing} masa`);
   }
   let file = path.normalize(path.join(STATIC_DIR, url));
   if (!file.startsWith(STATIC_DIR)) {

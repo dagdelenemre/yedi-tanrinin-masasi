@@ -32,6 +32,20 @@ docker exec CADDY_CONTAINER caddy reload --config /etc/caddy/Caddyfile --adapter
 
 Güncelleme için `cd /opt/yedi-tanri && git pull && docker compose up -d --build` yeterli.
 
+### Otomatik güncelleme
+
+`deploy/oto-guncelle.sh` her çalıştığında GitHub'da yeni commit olup olmadığına bakar. Varsa çeker ve container'ı yeniden derler. O anda bir masada oyun sürüyorsa güncellemeyi sonraki çalışmaya erteler. 5 dakikada bir çalıştırmak için:
+
+```bash
+(crontab -l 2>/dev/null | grep -v oto-guncelle; echo '*/5 * * * * /opt/yedi-tanri/deploy/oto-guncelle.sh >> /var/log/yedi-tanri-guncelle.log 2>&1') | crontab -
+```
+
+Kayıtlar `/var/log/yedi-tanri-guncelle.log` dosyasında. Kapatmak için:
+
+```bash
+crontab -l | grep -v oto-guncelle | crontab -
+```
+
 ---
 
 ## B) Sunucuda doğrudan nginx ile (Docker yoksa)
