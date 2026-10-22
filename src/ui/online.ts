@@ -108,15 +108,26 @@ function statusLine() {
 // ---------------------------------------------------------------------------
 // Giriş: oda kur / katıl
 // ---------------------------------------------------------------------------
-export function showOnline(onBack: () => void) {
+export function showOnline(onBack: () => void, prefillCode = '') {
   back = onBack;
   if (!unsub) unsub = net.on(onMessage);
   net.connect();
   table = null;
   lobbyEl = null;
-  const name = h('input', { class: 'ink-input', maxlength: 16, placeholder: 'Adın', value: store('ytm-name', '') }) as HTMLInputElement;
-  const code = h('input', { class: 'ink-input code', maxlength: 4, placeholder: '····', inputmode: 'numeric' }) as HTMLInputElement;
-  code.oninput = () => (code.value = code.value.replace(/\D/g, '').slice(0, 4));
+  const name = h('input', { class: 'ink-input', type: 'text', maxlength: 16, placeholder: 'Adın', autocomplete: 'nickname', value: store('ytm-name', '') }) as HTMLInputElement;
+  // type="tel": telefonlarda doğrudan rakam klavyesi açılır, sözcük önerisi/IME araya girmez
+  const code = h('input', { class: 'ink-input code', type: 'tel', inputmode: 'numeric', pattern: '[0-9]*', maxlength: 4, placeholder: '····', autocomplete: 'off', value: prefillCode }) as HTMLInputElement;
+  // rakam dışını temizle; değeri yalnızca gerçekten değiştiyse yaz (aksi halde Android klavyesi tuşları yutabiliyor)
+  const digitsOnly = (v: string) =>
+    v
+      .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x660)) // Arapça rakamlar
+      .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x6f0)) // Farsça rakamlar
+      .replace(/\D/g, '')
+      .slice(0, 4);
+  code.addEventListener('input', () => {
+    const v = digitsOnly(code.value);
+    if (v !== code.value) code.value = v;
+  });
   const getName = () => {
     const n = name.value.trim();
     if (!n) {
@@ -136,8 +147,9 @@ export function showOnline(onBack: () => void) {
   join.onclick = () => {
     const n = getName();
     if (!n) return;
-    if (!/^\d{4}$/.test(code.value)) return toast('Oda numarası 4 haneli.');
-    net.send({ t: 'join', code: code.value, name: n });
+    const c = digitsOnly(code.value);
+    if (!/^\d{4}$/.test(c)) return toast('Oda numarası 4 haneli.');
+    net.send({ t: 'join', code: c, name: n });
   };
   code.onkeydown = (e) => e.key === 'Enter' && join.click();
   const panel = h(
@@ -222,6 +234,16 @@ function showLobby() {
   const result = r.lastResult
     ? h('div', { class: 'last-result' }, h('div', { class: 'op-label' }, 'Son maç'), ...r.lastResult.map((s) => h('div', { class: 'lr-row' }, h('span', {}, `${s.place}.`), h('b', {}, s.name), h('span', {}, `${s.stack} puan`))))
     : null;
+  const invite = h('button', { class: 'text-link invite' }, 'Davet bağlantısını kopyala');
+  invite.onclick = async () => {
+    const url = `${location.origin}/?oda=${r.code}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast('Bağlantı kopyalandı. Arkadaşına gönder, açınca doğrudan katılma ekranına gelir.');
+    } catch {
+      window.prompt('Bu bağlantıyı kopyalayıp gönder:', url);
+    }
+  };
   const leave = h('button', { class: 'text-link', html: `${ICON.back}<span>Masadan ayrıl</span>` });
   leave.onclick = () => net.send({ t: 'leave' });
 
@@ -231,7 +253,8 @@ function showLobby() {
     h('div', { class: 'lobby-left' },
       h('div', { class: 'room-kicker' }, 'Oda numarası'),
       h('div', { class: 'room-code' }, r.code),
-      h('div', { class: 'room-hint' }, 'Bu numarayı arkadaşlarına ver. Aynı adresten “Oda numarasıyla katıl” diyerek gelirler.'),
+      h('div', { class: 'room-hint' }, 'Bu numarayı arkadaşlarına ver ya da davet bağlantısını gönder.'),
+      invite,
       seats,
       result,
     ),

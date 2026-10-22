@@ -28,7 +28,7 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; background: #000; color: var(--ink); font-family: var(--text); overflow: hidden; user-select: none; font-variant-numeric: oldstyle-nums; }
+html, body { margin: 0; height: 100%; background: #000; color: var(--ink); font-family: var(--text); overflow: hidden; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; font-variant-numeric: oldstyle-nums; }
 #viewport { position: fixed; inset: 0; background: #000; }
 #stage { position: absolute; width: 1280px; height: 720px; transform-origin: 0 0; overflow: hidden; background: var(--bg); }
 button { font-family: inherit; color: inherit; }
@@ -711,3 +711,6 @@ button { font-family: inherit; color: inherit; }
 .book-close { margin-top: 18px; }
 .book-close { background: none; border: none; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; font: 500 19px var(--text); font-variant-caps: all-small-caps; letter-spacing: .1em; color: #d8c49a; }
 .book-close:hover { color: var(--gold-hi); }
+
+/* giriş alanları her tarayıcıda (Safari/iOS dahil) yazılabilir olsun */
+input, textarea { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; touch-action: manipulation; }
